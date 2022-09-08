@@ -2,6 +2,7 @@
 
 ## Dependencies
 
-- PySimpleGUI
-- rich
 - dataclasses_json
+- PySimpleGUI
+- requests
+- rich
