@@ -4,3 +4,4 @@
 
 - PySimpleGUI
 - rich
+- dataclasses_json
