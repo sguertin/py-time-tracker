@@ -2,6 +2,7 @@ from enum import IntEnum
 from logging import CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
 from os import getenv
 from pathlib import Path
+from enum import Enum
 
 try:
     WORKING_DIR: Path = Path(getenv("USERPROFILE"), "TimeTracking")
@@ -12,8 +13,8 @@ JIRA_NEEDS_AUTH_CODE = 901
 JIRA_FAILED_AUTH = 403
 JIRA_SUCCESS_RESPONSE = 201
 
-ISSUES_LIST: Path = Path(WORKING_DIR, "issues.json")
-DELETED_ISSUES_LIST: Path = Path(WORKING_DIR, "deletedIssues.json")
+ACTIVE_ISSUES_FILE: Path = Path(WORKING_DIR, "issues.json")
+DELETED_ISSUES_FILE: Path = Path(WORKING_DIR, "deletedIssues.json")
 SETTINGS_FILE: Path = Path(WORKING_DIR, "settings.json")
 
 HOUR_RANGE: range = range(24)
@@ -37,6 +38,8 @@ LOGGING_LEVELS = {
     "Debug": DEBUG,
 }
 
+EMPTY = ""
+
 
 class LogLevel(IntEnum):
     NOTSET = NOTSET
@@ -45,3 +48,23 @@ class LogLevel(IntEnum):
     WARNING = WARNING
     INFO = INFO
     DEBUG = DEBUG
+
+
+class StringEnum(Enum):
+    def __repr__(self):
+        return str(self.value)
+
+    def __str__(self):
+        return str(self.value)
+
+
+class Events(StringEnum):
+    ADD = "-ADD-"
+    ANOTHER = "-ANOTHER-"
+    CANCEL = "-CANCEL-"
+    CLOSE = "-CLOSE-"
+    OK = "-OK-"
+    SAVE = "-SAVE-"
+    REMOVE = "-REMOVE-"
+    RESTORE = "-RESTORE-"
+    RETRY = "-RETRY-"
