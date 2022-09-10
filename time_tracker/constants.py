@@ -65,6 +65,7 @@ class Events(StringEnum):
     CLOSE = "-CLOSE-"
     OK = "-OK-"
     SAVE = "-SAVE-"
+    SUBMIT = "-SUBMIT-"
     REMOVE = "-REMOVE-"
     RESTORE = "-RESTORE-"
     RETRY = "-RETRY-"
