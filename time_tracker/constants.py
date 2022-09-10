@@ -9,13 +9,9 @@ try:
 except:
     WORKING_DIR: Path = Path(getenv("HOME"), "TimeTracking")
 
-JIRA_NEEDS_AUTH_CODE = 901
-JIRA_FAILED_AUTH = 403
-JIRA_SUCCESS_RESPONSE = 201
-
 ACTIVE_ISSUES_FILE: Path = Path(WORKING_DIR, "issues.json")
 DELETED_ISSUES_FILE: Path = Path(WORKING_DIR, "deletedIssues.json")
-SETTINGS_FILE: Path = Path(WORKING_DIR, "settings.json")
+
 
 HOUR_RANGE: range = range(24)
 MINUTE_RANGE: range = range(60)
@@ -65,7 +61,9 @@ class Events(StringEnum):
     CLOSE = "-CLOSE-"
     OK = "-OK-"
     SAVE = "-SAVE-"
+    SKIP = "-SKIP-"
     SUBMIT = "-SUBMIT-"
+    REFRESH = "-REFRESH-"
     REMOVE = "-REMOVE-"
     RESTORE = "-RESTORE-"
     RETRY = "-RETRY-"
