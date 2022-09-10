@@ -1,6 +1,9 @@
+from logging import Logger
 import PySimpleGUI as sg
 
 from constants import Events
+from time_tracker.constants import EMPTY
+from time_tracker.logging import ILoggingFactory
 from time_tracker.view import View
 
 
@@ -50,3 +53,28 @@ class RetryPrompt(Prompt):
                 sg.Cancel(key=Events.CANCEL),
             ],
         ]
+
+
+class CredentialsPrompt:
+    log: Logger
+
+    def __init__(self, log_factory: ILoggingFactory):
+        self.log = log_factory.get_logger("UICredentialsService")
+        self.title = (f"Time Tracking - Enter Your Credentials",)
+        self.layout = [
+            [sg.T(f"Please provide your username and password")],
+            [sg.T(f"Username:"), sg.In(key="-USER-")],
+            [sg.T(f"Password:"), sg.In(key="-PASSWORD-", password_char="•")],
+            [sg.Submit(key=Events.SUBMIT), sg.Cancel(key=Events.CANCEL)],
+        ]
+
+    def run(self) -> tuple[str, str]:
+        window = sg.Window(self.title, self.layout)
+        while True:
+            event, values = window.read(close=True)
+            self.log.info("Event %s received", event)
+            match event:
+                case Events.SUBMIT:
+                    return values["-USER-"], values["-PASSWORD-"]
+                case Events.CANCEL | sg.WIN_CLOSED:
+                    return EMPTY, EMPTY
