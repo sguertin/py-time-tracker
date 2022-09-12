@@ -1,5 +1,5 @@
-from time_tracker.logging import LoggingProvider
-from time_tracker.settings import Settings
+from time_tracker.logging.provider import LoggingProvider
+from time_tracker.settings.models import Settings
 
 
 class Factory:
