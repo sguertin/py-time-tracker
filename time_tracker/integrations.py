@@ -10,11 +10,12 @@ import requests
 from dataclasses_json import DataClassJsonMixin
 import PySimpleGUI as sg
 
-from time_tracker.constants import EMPTY, StringEnum
-from time_tracker.logging import LoggingProvider
+from time_tracker.enum import StringEnum
+from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.prompts import PromptEvents, RetryPrompt
-from time_tracker.settings import Settings
+from time_tracker.settings.models import Settings
 from time_tracker.time_entry import TimeEntry
+from time_tracker.view import EMPTY
 
 
 class JiraStatusCodes(IntEnum):
@@ -58,7 +59,7 @@ class JiraCredentialViewKeys(StringEnum):
 class JiraCredentialView:
     log: Logger
 
-    def __init__(self, log_provider: LoggingProvider):
+    def __init__(self, log_provider: ILoggingProvider):
         self.log = log_provider.get_logger("JiraCredentialView")
         self.title = (f"Time Tracking - Jira Credentials",)
         self.layout = [
@@ -92,7 +93,7 @@ class JiraCredentialView:
 class JiraService:
     def __init__(
         self,
-        log_provider: LoggingProvider,
+        log_provider: ILoggingProvider,
         settings: Settings,
     ):
         self.auth_provider = BasicAuthenticationProvider()

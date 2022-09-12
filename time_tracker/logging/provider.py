@@ -8,7 +8,7 @@ from time_tracker.settings.models import Settings
 from time_tracker.logging.models import LogLevel
 
 
-class ILoggingProvider(ILoggingProvider):
+class LoggingProvider(ILoggingProvider):
     log_level: LogLevel
 
     def __init__(self, settings: Settings):

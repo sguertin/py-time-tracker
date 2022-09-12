@@ -3,7 +3,7 @@ from logging import Logger
 from pathlib import Path
 
 
-from time_tracker.issues.models import (
+from time_tracker.issue.models import (
     ACTIVE_ISSUES_FILE,
     DELETED_ISSUES_FILE,
     Issue,

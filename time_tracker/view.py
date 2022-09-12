@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
+from typing import Any
 
-from time_tracker.constants import Events
+EMPTY = ""
 
 
 class View(metaclass=ABCMeta):
@@ -13,5 +14,5 @@ class View(metaclass=ABCMeta):
         return (hasattr(subclass, "run") and callable(subclass.run)) or NotImplemented
 
     @abstractmethod
-    def run(self, close: bool = True) -> tuple[Events, dict[str, str]]:
+    def run(self) -> Any:
         raise NotImplementedError(self.run)
