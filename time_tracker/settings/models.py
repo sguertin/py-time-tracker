@@ -1,11 +1,34 @@
 from dataclasses import dataclass, field
 from datetime import timedelta, datetime
 
+from os import getenv
+from pathlib import Path
+
 from dataclasses_json import DataClassJsonMixin
 from rich import print
 
-from time_tracker.constants import SETTINGS_FILE, Events, LogLevel
-from time_tracker.prompts import RetryPrompt
+from time_tracker.enum import StringEnum
+from time_tracker.prompts import PromptEvents, RetryPrompt
+from time_tracker.logging.models import LogLevel
+
+try:
+    WORKING_DIR: Path = Path(getenv("USERPROFILE"), "TimeTracking")
+except:
+    WORKING_DIR: Path = Path(getenv("HOME"), "TimeTracking")
+
+SETTINGS_FILE: Path = Path(WORKING_DIR, "settings.json")
+
+HOUR_RANGE: range = range(24)
+MINUTE_RANGE: range = range(60)
+DAYS_OF_WEEK = {
+    "Monday": 0,
+    "Tuesday": 1,
+    "Wednesday": 2,
+    "Thursday": 3,
+    "Friday": 4,
+    "Saturday": 5,
+    "Sunday": 6,
+}
 
 
 @dataclass(slots=True)
@@ -20,9 +43,16 @@ class Settings(DataClassJsonMixin):
     interval_minutes: int = 0
     enable_jira: bool = False
     log_level: LogLevel = LogLevel.INFO
+    _log_file_path: str = None
     days_of_week: frozenset[int] = field(
         default_factory=lambda: frozenset({0, 1, 2, 3, 4})
     )
+
+    @property
+    def log_file_path(self) -> Path:
+        if self._log_file_path:
+            return Path(self._log_file_path)
+        return None
 
     @property
     def time_interval(self) -> timedelta:
@@ -73,15 +103,33 @@ class Settings(DataClassJsonMixin):
             cls._instance = cls()
         return cls._instance
 
-    def save(self):
-        retry = True
-        while retry:
-            try:
-                with open(SETTINGS_FILE, "w+") as f:
-                    f.write(self.to_json())
-            except Exception as e:
-                print(e)
-                event = RetryPrompt(
-                    f"An error occurred while saving {SETTINGS_FILE}\nError {e}"
-                ).run()
-                retry = event == Events.RETRY
+    def save(self) -> "Settings":
+        try:
+            with open(SETTINGS_FILE, "w+") as f:
+                f.write(self.to_json())
+        except Exception as e:
+            print(e)
+            event = RetryPrompt(
+                f"An error occurred while saving {SETTINGS_FILE}\nError {e}"
+            ).run()
+            if event == PromptEvents.RETRY:
+                return self.save()
+        return self
+
+
+class SettingsViewEvents(StringEnum):
+    SAVE = "-SAVE-"
+    CANCEL = "-CANCEL-"
+
+
+class SettingsViewKeys(StringEnum):
+    BASE_URL = "-BASE_URL-"
+    ENABLE_JIRA = "-ENABLE_JIRA-"
+    END_HOUR = "-END_HOUR-"
+    END_MINUTE = "-END_MINUTES-"
+    INTERVAL_HOURS = "-INTERVAL_HOURS-"
+    INTERVAL_MINUTES = "-INTERVAL_MINUTES-"
+    LOG_LEVEL = "-LOG_LEVEL-"
+    START_HOUR = "-START_HOUR-"
+    START_MINUTE = "-START_MINUTES-"
+    THEME = "-THEME-"
