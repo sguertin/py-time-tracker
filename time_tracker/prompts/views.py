@@ -1,29 +1,24 @@
+from abc import ABCMeta
 from logging import Logger
 import PySimpleGUI as sg
 
-from time_tracker.enum import StringEnum
-from time_tracker.logging.provider import ILoggingProvider
+from time_tracker.logging.interfaces import ILoggingProvider
+from time_tracker.prompts.models import PromptEvents
 from time_tracker.view import View
 
-
-class PromptEvents(StringEnum):
-    OK = "-OK-"
-    CANCEL = "-CANCEL-"
-    CLOSE = "-CLOSE-"
-    RETRY = "-RETRY-"
-
-
-class Prompt(View):
+class BasePromptView(View,metaclass=ABCMeta):
     log: Logger
 
     def run(self) -> PromptEvents:
         window = sg.Window(title=self.title, layout=self.layout, size=self.size)
         event, _ = window.read(close=True)
         self.log.debug(event)
+        if event == sg.WIN_CLOSED:
+            event = PromptEvents.CLOSE        
         return event
 
 
-class OkCancelPrompt(Prompt):
+class OkCancelPromptView(BasePromptView):
     def __init__(self, msg: str, log_provider: ILoggingProvider):
         """OkCancelPrompt - When run, will display a message and include Ok and Cancel buttons
 
@@ -42,7 +37,7 @@ class OkCancelPrompt(Prompt):
         ]
 
 
-class WarningPrompt(Prompt):
+class WarningPromptView(BasePromptView):
     def __init__(self, msg: str, log_provider: ILoggingProvider):
         """WarningPrompt - When run, will display a message with a Close button
 
@@ -59,7 +54,7 @@ class WarningPrompt(Prompt):
         )
 
 
-class RetryPrompt(Prompt):
+class RetryPromptView(BasePromptView):
     def __init__(self, msg: str, log_provider: ILoggingProvider):
         """RetryPrompt - When run, will display a message and include Retry and Cancel buttons
 
@@ -71,8 +66,4 @@ class RetryPrompt(Prompt):
         self.layout = [
             [sg.Text(msg)],
             [sg.Text("Do you want to retry?")],
-            [
-                sg.Button("Retry", key=PromptEvents.RETRY, bind_return_key=True),
-                sg.Cancel(key=PromptEvents.CANCEL),
-            ],
         ]
