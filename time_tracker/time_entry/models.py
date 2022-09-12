@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from enum import IntEnum
 from typing import Optional
 
@@ -47,3 +48,8 @@ class TimeEntryEvents(StringEnum):
 class TimeEntry(DataClassJsonMixin):
     issue: Issue
     comment: Optional[str] = None
+
+@dataclass(slots=True)
+class TimeEntryLog(DataClassJsonMixin):
+    date: datetime = field(default_factory=datetime.now)
+    entries: list[TimeEntry] = field(default_factory=list)

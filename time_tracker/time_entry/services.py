@@ -7,10 +7,21 @@ from time_tracker.time_entry.interfaces import IAuthenticationProvider
 from time_tracker.time_entry.models import JiraResponse, JiraStatusCodes
 
 from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.settings.models import Settings
-from time_tracker.time_entry import TimeEntry
+from time_tracker.settings.models import Settings, WORKING_DIR
+from time_tracker.time_entry.models import TimeEntry
 
+class TimeEntryFileService:
+    settings: Settings
 
+    def __init__(self, settings: Settings):
+        self.settings = settings
+    def log_hours(self, time_entry: TimeEntry, time_interval: timedelta = None):
+        if not time_interval:
+            time_interval = timedelta(
+                hours=self.settings.interval_hours,
+                minutes=self.settings.interval_minutes,
+            )
+        pass
 class JiraService:
     def __init__(
         self,
