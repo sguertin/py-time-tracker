@@ -10,8 +10,8 @@ from time_tracker.issue.models import (
     IssueList,
 )
 from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.prompts import PromptEvents, RetryPrompt
-
+from time_tracker.prompts.models import PromptEvents
+from time_tracker.prompts.views import RetryPromptView
 
 class IssueService:
     log: Logger
@@ -36,7 +36,7 @@ class IssueService:
             return new_list
         except Exception as e:
             self.log.error(e)
-            event = RetryPrompt(
+            event = RetryPromptView(
                 f"An error occurred while loading {path}\nError: {e}"
             ).run()
             if event == PromptEvents.RETRY:
@@ -64,7 +64,7 @@ class IssueService:
             return updated_list
         except Exception as e:
             self.log.error(e)
-            event = RetryPrompt(
+            event = RetryPromptView(
                 f"An error occurred while saving file '{filepath}'\nError: {e}"
             ).run()
             if event == PromptEvents.RETRY:
