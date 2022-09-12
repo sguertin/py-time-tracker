@@ -1,5 +1,3 @@
-from rich import print
-
 from time_tracker.menu import MenuView, MenuViewEvents
 from time_tracker.logging.provider import LoggingProvider
 from time_tracker.settings.models import Settings

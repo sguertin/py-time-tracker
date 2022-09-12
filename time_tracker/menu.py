@@ -3,7 +3,7 @@ from datetime import datetime
 import PySimpleGUI as sg
 
 from time_tracker.enum import StringEnum
-from time_tracker.integrations import JiraService
+from time_tracker.time_entry.services import JiraService
 from time_tracker.issue.views import IssueManagementView, IssueService
 from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.settings.models import Settings, SettingsViewEvents
