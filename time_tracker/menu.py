@@ -8,7 +8,7 @@ from time_tracker.issue.views import IssueManagementView, IssueService
 from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.settings.models import Settings, SettingsViewEvents
 from time_tracker.settings.views import SettingsView
-from time_tracker.time_entry import TimeEntryEvents, TimeEntryPrompt
+from time_tracker.time_entry.views import TimeEntryEvents, TimeEntryView
 from time_tracker.view import View
 
 BUTTON_SIZE: tuple[int, int] = (35, 1)
@@ -67,7 +67,7 @@ class MenuView(View):
                 self.record_time(self.last_recorded, self.next_time_entry)
 
             if event == MenuViewEvents.RECORD or datetime.now() >= self.next_time_entry:
-                event, entry = TimeEntryPrompt(self.log_provider).run()
+                event, entry = TimeEntryView(self.log_provider).run()
                 if event == TimeEntryEvents.SUBMIT:
                     # record to file
                     if self.settings.enable_jira:
@@ -78,7 +78,7 @@ class MenuView(View):
         return event
 
     def record_time(self, from_time: datetime, to_time: datetime):
-        event, entry = TimeEntryPrompt(self.log_provider).run(from_time, to_time)
+        event, entry = TimeEntryView(self.log_provider).run(from_time, to_time)
         if event == TimeEntryEvents.SUBMIT:
             # record to file
             if self.settings.enable_jira:
