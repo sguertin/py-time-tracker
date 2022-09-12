@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable
@@ -42,7 +42,7 @@ class IssueManagementViewEvents(StringEnum):
 class Issue(DataClassJsonMixin):
     issue_number: str
     description: str
-    created: datetime = datetime.now()
+    created: datetime = field(default_factory=datetime.now)
 
     def __str__(self):
         return f"{self.issue_number} - {self.description}"
@@ -69,8 +69,8 @@ class Issue(DataClassJsonMixin):
 @dataclass(slots=True)
 class IssueList(DataClassJsonMixin):
     filepath: Path
-    issues: list[Issue] = []
-    updated: datetime = datetime.now()
+    issues: list[Issue] = field(default_factory=list)
+    updated: datetime = field(default_factory=datetime.now)
 
     def append(self, issue: Issue) -> None:
         self.issues.append(issue)

@@ -34,7 +34,7 @@ DAYS_OF_WEEK = {
 @dataclass(slots=True)
 class Settings(DataClassJsonMixin):
     theme: str = "DarkBlue3"
-    base_url: str = ""
+    base_url: str = None
     start_hour: int = 8
     start_minute: int = 0
     end_hour: int = 17
