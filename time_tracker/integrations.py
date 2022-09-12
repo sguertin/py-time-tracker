@@ -1,27 +1,31 @@
 import base64
 from dataclasses import dataclass
 from datetime import timedelta
+from enum import IntEnum
 import json
 from logging import Logger
 from typing import Optional
 
 import requests
 from dataclasses_json import DataClassJsonMixin
-from time_tracker.constants import (
-    JIRA_FAILED_AUTH,
-    JIRA_NEEDS_AUTH_CODE,
-    JIRA_SUCCESS_RESPONSE,
-)
+import PySimpleGUI as sg
 
-from time_tracker.issues import Issue
-from time_tracker.logging import ILoggingFactory
-from time_tracker.prompts import CredentialsPrompt
+from time_tracker.constants import EMPTY, StringEnum
+from time_tracker.logging import LoggingProvider
+from time_tracker.prompts import PromptEvents, RetryPrompt
 from time_tracker.settings import Settings
+from time_tracker.time_entry import TimeEntry
+
+
+class JiraStatusCodes(IntEnum):
+    NEEDS_AUTH = 901
+    FAILED_AUTH = 403
+    SUCCESS = 201
 
 
 @dataclass(slots=True)
 class JiraResponse(DataClassJsonMixin):
-    status_code: int
+    status_code: JiraStatusCodes
     message: Optional[str] = None
 
 
@@ -41,26 +45,71 @@ class BasicAuthenticationProvider:
         self._auth = encoding
 
 
-class JiraService:
-    auth_provider: BasicAuthenticationProvider
+class JiraCredentialViewEvents(StringEnum):
+    SUBMIT = "-SUBMIT-"
+    CANCEL = "-CANCEL-"
+
+
+class JiraCredentialViewKeys(StringEnum):
+    USER = "-USER-"
+    PASSWORD = "-PASSWORD-"
+
+
+class JiraCredentialView:
     log: Logger
-    last_status: int
-    settings: Settings
 
-    def __init__(self, logging_factory: ILoggingFactory):
+    def __init__(self, log_provider: LoggingProvider):
+        self.log = log_provider.get_logger("JiraCredentialView")
+        self.title = (f"Time Tracking - Jira Credentials",)
+        self.layout = [
+            [sg.Text(f"Please provide your username and password")],
+            [sg.Text(f"Username:"), sg.Input(key=JiraCredentialViewKeys.USER)],
+            [
+                sg.Text(f"Password:"),
+                sg.Input(key=JiraCredentialViewKeys.PASSWORD, password_char="•"),
+            ],
+            [
+                sg.Submit(key=JiraCredentialViewEvents.SUBMIT),
+                sg.Cancel(key=JiraCredentialViewEvents.CANCEL),
+            ],
+        ]
+
+    def run(self) -> tuple[str, str]:
+        window = sg.Window(self.title, self.layout)
+        while True:
+            event, values = window.read(close=True)
+            self.log.info("Event %s received", event)
+            match event:
+                case JiraCredentialViewEvents.SUBMIT:
+                    return (
+                        values[JiraCredentialViewKeys.USER],
+                        values[JiraCredentialViewKeys.PASSWORD],
+                    )
+                case JiraCredentialViewEvents.CANCEL | sg.WIN_CLOSED:
+                    return EMPTY, EMPTY
+
+
+class JiraService:
+    def __init__(
+        self,
+        log_provider: LoggingProvider,
+        settings: Settings,
+    ):
         self.auth_provider = BasicAuthenticationProvider()
-        self.credentials_prompt = CredentialsPrompt(logging_factory)
+        self.credentials_prompt = JiraCredentialView(log_provider)
         self.last_status = 0
-        self.log = logging_factory.get_logger("JiraService")
-        self.settings = Settings.load()
+        self.log = log_provider.get_logger("JiraService")
+        self.settings = settings
+        self.auth_provider.set_auth(self.credentials_prompt.run())
 
+    @property
     def base_url(self) -> str:
         return self.settings.base_url
 
     @property
     def headers(self) -> dict[str, str]:
         return {
-            "Authorization": f"{self.auth_provider.get_auth()}",
+            "Authorization": self.auth_provider.get_auth(),
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
@@ -68,36 +117,41 @@ class JiraService:
     @property
     def clean_headers(self) -> dict[str, str]:
         return {
-            "Authorization": f"Basic *******",
+            "Authorization": "Basic *******",
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
 
     def try_log_work(
         self,
-        issue: Issue,
-        comment: Optional[str] = None,
+        entry: TimeEntry,
         time_interval: Optional[timedelta] = None,
     ) -> None:
+        retry = PromptEvents.RETRY
         if time_interval is None:
             time_interval = self.settings.time_interval
-        response = self.log_hours(issue, comment, time_interval)
-        if response.status_code != JIRA_SUCCESS_RESPONSE:
-            self.log.warning(
-                f"Received Response Code: {response.status_code} Message: {response.message}"
-            )
-            retry = self.ui_provider.warning_retry_prompt(
-                f'Received unexpected response from Jira: HttpStatusCode: {response.status_code} Message: "{response.message}"'
-            )
-            if retry:
-                if response.status_code in [JIRA_NEEDS_AUTH_CODE, JIRA_FAILED_AUTH]:
-                    user_name, password = self.credentials_prompt.run()
-                    self.auth_provider.set_auth(user_name, password)
-                return self.try_log_work(issue, comment)
-        self.log.debug(response)
+        while retry == PromptEvents.RETRY:
+            response = self.log_hours(entry, time_interval)
+            self.log.debug(response)
+            if response.status_code != JiraStatusCodes.SUCCESS:
+                self.log.warning(
+                    f"Received Response Code: {response.status_code} Message: '{response.message}'"
+                )
+                retry = RetryPrompt(
+                    f"Received unexpected response from Jira: "
+                    + "HttpStatusCode: {response.status_code} Message: '{response.message}'"
+                    + "\nDo you want to retry?"
+                ).run()
+                if retry == PromptEvents.RETRY and response.status_code in [
+                    JiraStatusCodes.NEEDS_AUTH,
+                    JiraStatusCodes.FAILED_AUTH,
+                ]:
+                    self.auth_provider.set_auth(self.credentials_prompt.run())
 
     def log_hours(
-        self, issue_num: str, comment: str = None, time_interval: timedelta = None
+        self,
+        entry: TimeEntry,
+        time_interval: timedelta = None,
     ) -> JiraResponse:
         if not time_interval:
             time_interval = timedelta(
@@ -107,49 +161,52 @@ class JiraService:
         if not self.auth_provider.get_auth():
             self.log.debug("Credentials not found")
             return JiraResponse(
-                JIRA_NEEDS_AUTH_CODE, "Need to reauthenticate with Jira"
+                JiraStatusCodes.NEEDS_AUTH, "Need to reauthenticate with Jira"
             )
 
-        url = f"{self.base_url}/rest/api/2/issue/{issue_num}/worklog"
+        url = self.worklog_url(entry.issue)
 
-        exists, status_code = self.issue_exists(issue_num)
+        exists, status_code = self.issue_exists(entry.issue)
         if exists:
             data = {"timeSpentSeconds": {time_interval.seconds}}
-            if comment:
-                data["comment"] = comment
+            if entry.comment:
+                data["comment"] = entry.comment
             self.log.debug(
                 "POST(%s, headers=%s, data=%s)",
                 url,
                 str(self.clean_headers),
-                json.dumps(data),
+                str(data),
             )
             response = requests.post(url, headers=self.headers, data=json.dumps(data))
 
-            if response.status_code == JIRA_FAILED_AUTH:
+            if response.status_code == JiraStatusCodes.FAILED_AUTH:
                 self.auth_provider.clear_auth()
                 return JiraResponse(
                     response.status_code, "Authentication with Jira failed!"
                 )
-            elif response.status_code != JIRA_SUCCESS_RESPONSE:
+            elif response.status_code != JiraStatusCodes.SUCCESS:
                 return JiraResponse(
                     response.status_code,
-                    f"Expected status code of 201, got {response.status_code}",
+                    f"Expected status code of {JiraStatusCodes.SUCCESS}, got {response.status_code}",
                 )
             return JiraResponse(response.status_code)
         else:
-            warning_msg = f"Jira encountered an error attempting to access {issue_num} with a Status Code of {status_code}"
+            warning_msg = f"Jira encountered an error attempting to access {entry.issue} with a Status Code of {status_code}"
             self.log.warning(
                 "Jira encountered an error attempting to access %s with a Status Code of %s",
-                issue_num,
+                entry.issue,
                 status_code,
             )
             return JiraResponse(status_code, warning_msg)
 
-    def get_url(self, issue_num):
-        return f"{self.base_url}/rest/api/2/issue/{issue_num}/worklog"
+    def issue_url(self, issue):
+        return f"{self.base_url}/rest/api/2/issue/{issue}"
 
-    def issue_exists(self, issue_num: str) -> "tuple[bool, int]":
-        url = f"{self.base_url}/rest/api/2/issue/{issue_num}"
+    def worklog_url(self, issue):
+        return f"{self.issue_url(issue)}/worklog"
+
+    def issue_exists(self, issue: str) -> tuple[bool, int]:
+        url = self.issue_url(issue)
         self.log.debug(f"GET({url}, headers={self.clean_headers})")
         response = requests.get(url, headers=self.headers)
 
