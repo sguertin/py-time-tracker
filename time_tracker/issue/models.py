@@ -1,18 +1,12 @@
-from logging import Logger
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Callable, Iterable
 
 from dataclasses_json import DataClassJsonMixin
-import PySimpleGUI as sg
-
 
 from time_tracker.enum import StringEnum
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.prompts import PromptEvents, RetryPrompt
 from time_tracker.settings.models import WORKING_DIR
-from time_tracker.view import EMPTY, View
 
 ACTIVE_ISSUES_FILE: Path = WORKING_DIR.joinpath("issues.json")
 DELETED_ISSUES_FILE: Path = WORKING_DIR.joinpath("deletedIssues.json")
