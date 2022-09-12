@@ -1,27 +1,50 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 import json
+from pathlib import Path
 from typing import Optional
 
 import requests
 from time_tracker.time_entry.interfaces import IAuthenticationProvider
-from time_tracker.time_entry.models import JiraResponse, JiraStatusCodes
+from time_tracker.time_entry.models import JiraResponse, JiraStatusCodes, TimeEntryLog
 
 from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.settings.models import Settings, WORKING_DIR
 from time_tracker.time_entry.models import TimeEntry
 
+
 class TimeEntryFileService:
     settings: Settings
 
-    def __init__(self, settings: Settings):
+    def __init__(self, log_provider: ILoggingProvider, settings: Settings):
+        self.log = log_provider.get_logger("TimeEntryFileService")
         self.settings = settings
-    def log_hours(self, time_entry: TimeEntry, time_interval: timedelta = None):
+
+    def new_time_entry_log(
+        self, time_entry: TimeEntry, time_interval: timedelta = None
+    ):
         if not time_interval:
             time_interval = timedelta(
                 hours=self.settings.interval_hours,
                 minutes=self.settings.interval_minutes,
             )
-        pass
+        if self.time_entry_file_path.exists():
+            with open(self.time_entry_file_path, "r") as f:
+                entry_log = TimeEntryLog.from_json(f.read())
+        else:
+            entry_log = TimeEntryLog()
+        entry_log.entries.append(time_entry)
+        try:
+            with open(self.time_entry_file_path, "w") as f:
+                f.write(entry_log.to_json())
+        except Exception as e:
+            self.log.error(e)
+
+    @property
+    def time_entry_file_path(self) -> Path:
+        now = datetime.now()
+        return WORKING_DIR / f"TimeEntryLog-{now.month:02}-{now.day:02}-{now.year}"
+
+
 class JiraService:
     def __init__(
         self,
