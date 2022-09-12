@@ -4,7 +4,7 @@ from logging import Logger
 from time_tracker.logging.models import LogLevel
 
 
-class ILoggingProvider(meta=ABCMeta):
+class ILoggingProvider(metaclass=ABCMeta):
     log_level: LogLevel
 
     @classmethod

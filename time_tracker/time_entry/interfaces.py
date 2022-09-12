@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 
-class IAuthenticationProvider(meta=ABCMeta):
+class IAuthenticationProvider(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass: "IAuthenticationProvider"):
         return (

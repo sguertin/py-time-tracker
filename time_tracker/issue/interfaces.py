@@ -8,7 +8,7 @@ from time_tracker.issue.models import (
 )
 
 
-class IIssueService(meta=ABCMeta):
+class IIssueService(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, subclass: "IIssueService"):
         return (
