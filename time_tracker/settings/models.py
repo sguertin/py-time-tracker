@@ -8,7 +8,7 @@ from dataclasses_json import DataClassJsonMixin
 from rich import print
 
 from time_tracker.enum import StringEnum
-from time_tracker.prompts import PromptEvents, RetryPrompt
+
 from time_tracker.logging.models import LogLevel
 
 try:
@@ -109,11 +109,7 @@ class Settings(DataClassJsonMixin):
                 f.write(self.to_json())
         except Exception as e:
             print(e)
-            event = RetryPrompt(
-                f"An error occurred while saving {SETTINGS_FILE}\nError {e}"
-            ).run()
-            if event == PromptEvents.RETRY:
-                return self.save()
+            return None
         return self
 
 
