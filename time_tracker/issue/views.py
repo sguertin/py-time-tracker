@@ -96,7 +96,7 @@ class IssueManagementView(View):
                 case IssueManagementViewEvents.RESTORE:
                     active_issues, deleted_issues = self.issue_service.load_lists()
                 case IssueManagementViewEvents.SAVE:
-                    self.issue_service.save_lists(active_issues, deleted_issues)
+                    self.issue_service.save_all_lists(active_issues, deleted_issues)
                     break
                 case IssueManagementViewEvents.CANCEL | sg.WIN_CLOSED:
                     break

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
 
-
+from time_tracker.issue.interfaces import IIssueService
 from time_tracker.issue.models import (
     ACTIVE_ISSUES_FILE,
     DELETED_ISSUES_FILE,
@@ -13,7 +13,8 @@ from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.prompts.models import PromptEvents
 from time_tracker.prompts.views import RetryPromptView
 
-class IssueService:
+
+class IssueService(IIssueService):
     log: Logger
 
     def __init__(self, log_provider: ILoggingProvider):
@@ -51,9 +52,11 @@ class IssueService:
     def load_lists(self) -> tuple[IssueList, IssueList]:
         return self.load_active_issues(), self.load_deleted_issues()
 
-    def save_list(self, issue_list: IssueList, filepath: Path = None) -> IssueList:
+    def save_list(self, issue_list: IssueList, filepath: Path = None) -> None:
         if filepath is None:
             filepath = issue_list.filepath
+        else:
+            issue_list.filepath = filepath
         try:
             updated_list = IssueList(filepath, issue_list.issues)
             with open(updated_list.filepath, "w") as f:
@@ -61,20 +64,20 @@ class IssueService:
                     updated_list.to_json(),
                     many=True,
                 )
-            return updated_list
+            updated_list
         except Exception as e:
             self.log.error(e)
             event = RetryPromptView(
                 f"An error occurred while saving file '{filepath}'\nError: {e}"
             ).run()
             if event == PromptEvents.RETRY:
-                return self.save_list(issue_list, filepath)
+                self.save_list(issue_list, filepath)
 
-    def save_active_list(self, active_list: IssueList) -> IssueList:
+    def save_active_list(self, active_list: IssueList) -> None:
         active_list.filepath = ACTIVE_ISSUES_FILE
-        return self.save_list(active_list)
+        self.save_list(active_list, ACTIVE_ISSUES_FILE)
 
-    def save_deleted_list(self, deleted_list: IssueList) -> IssueList:
+    def save_deleted_list(self, deleted_list: IssueList) -> None:
         now = datetime.now()
         deleted_list.filepath = DELETED_ISSUES_FILE
         deleted_list.issues = [
@@ -82,17 +85,16 @@ class IssueService:
             for issue in deleted_list.issues
             if now - issue.created >= timedelta(days=30)
         ]
-        return self.save_list(deleted_list, DELETED_ISSUES_FILE)
+        self.save_list(deleted_list, DELETED_ISSUES_FILE)
 
-    def save_lists(
-        self,
-        *issue_lists: tuple[
-            IssueList,
-        ],
-    ) -> set[IssueList]:
-        {self.save_list(issue_list) for issue_list in issue_lists}
+    def save_all_lists(
+        self, active_issue_list: IssueList, deleted_issue_list: IssueList
+    ) -> None:
+        self.save_active_list(active_issue_list)
+        self.save_deleted_list(deleted_issue_list)
 
     def new_issue(self, issue: Issue) -> IssueList:
         active_list = self.load_active_issues()
         active_list.append(issue)
-        return self.save_active_list(active_list)
+        self.save_active_list(active_list)
+        return active_list
