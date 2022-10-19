@@ -3,8 +3,8 @@ from logging import Logger
 import PySimpleGUI as sg
 
 from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.prompts.models import PromptEvents
-from time_tracker.view import View
+from time_tracker.prompts.models import PromptEvents, PromptKeys
+from time_tracker.view import EMPTY, View
 
 
 class BasePromptView(View, metaclass=ABCMeta):
@@ -68,3 +68,40 @@ class RetryPromptView(BasePromptView):
             [sg.Text(msg)],
             [sg.Text("Do you want to retry?")],
         ]
+
+
+class UserNamePasswordPrompt(BasePromptView):
+    def __init__(self, log_provider: ILoggingProvider):
+        self.log = log_provider.get_logger("UserNamePasswordPrompt")
+        self.title = (f"Time Tracking - Credentials",)
+        self.layout = [
+            [sg.Text(f"Please provide your username and password")],
+            [sg.Text(f"Username:"), sg.Input(key=PromptKeys.USERNAME)],
+            [
+                sg.Text(f"Password:"),
+                sg.Input(key=PromptKeys.PASSWORD, password_char="•"),
+            ],
+            [
+                sg.Submit(key=PromptEvents.OK),
+                sg.Cancel(key=PromptEvents.CANCEL),
+            ],
+        ]
+
+    def run(self) -> tuple[str, str]:
+        window = sg.Window(self.title, self.layout)
+        while True:
+            event, values = window.read(close=True)
+            self.log.info("Event %s received", event)
+            self.log.debug(
+                "EVENT %s USERNAME: %s",
+                event,
+                values[PromptKeys.USERNAME],
+            )
+            match event:
+                case PromptEvents.OK:
+                    return (
+                        values[PromptKeys.USERNAME],
+                        values[PromptKeys.PASSWORD],
+                    )
+                case PromptEvents.CANCEL | sg.WIN_CLOSED:
+                    return EMPTY, EMPTY

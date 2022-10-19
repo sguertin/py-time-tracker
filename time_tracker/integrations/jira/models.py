@@ -1,11 +1,8 @@
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Optional
 
 from dataclasses_json import DataClassJsonMixin
-
-from time_tracker.enum import StringEnum
 
 
 class JiraStatusCodes(IntEnum):
@@ -18,13 +15,3 @@ class JiraStatusCodes(IntEnum):
 class JiraResponse(DataClassJsonMixin):
     status_code: JiraStatusCodes
     message: Optional[str] = None
-
-
-class JiraCredentialViewEvents(StringEnum):
-    SUBMIT = "-SUBMIT-"
-    CANCEL = "-CANCEL-"
-
-
-class JiraCredentialViewKeys(StringEnum):
-    USER = "-USER-"
-    PASSWORD = "-PASSWORD-"

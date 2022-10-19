@@ -6,3 +6,8 @@ class PromptEvents(StringEnum):
     CANCEL = "-CANCEL-"
     CLOSE = "-CLOSE-"
     RETRY = "-RETRY-"
+
+
+class PromptKeys(StringEnum):
+    USERNAME = "-USERNAME-"
+    PASSWORD = "-PASSWORD-"

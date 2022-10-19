@@ -8,8 +8,6 @@ from time_tracker.issue.services import IssueService
 from time_tracker.issue.views import IssueManagementView
 from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.time_entry.models import (
-    JiraCredentialViewEvents,
-    JiraCredentialViewKeys,
     TimeEntry,
     TimeEntryKeys,
     TimeEntryEvents,
@@ -67,7 +65,10 @@ class TimeEntryView(View):
             event, values = window.read()
             if event == TimeEntryEvents.SUBMIT:
                 time_entry = TimeEntry(
-                    values[TimeEntryKeys.ENTRY], values[TimeEntryKeys.COMMENT]
+                    values[TimeEntryKeys.ENTRY],
+                    from_time,
+                    to_time,
+                    values[TimeEntryKeys.COMMENT],
                 )
             elif event == TimeEntryEvents.MANAGE_ISSUES:
                 IssueManagementView(self.issue_service).run()
@@ -75,37 +76,3 @@ class TimeEntryView(View):
         if event == sg.WIN_CLOSED:
             event = TimeEntryEvents.SKIP
         return event, time_entry
-
-
-class JiraCredentialView:
-    log: Logger
-
-    def __init__(self, log_provider: ILoggingProvider):
-        self.log = log_provider.get_logger("JiraCredentialView")
-        self.title = (f"Time Tracking - Jira Credentials",)
-        self.layout = [
-            [sg.Text(f"Please provide your username and password")],
-            [sg.Text(f"Username:"), sg.Input(key=JiraCredentialViewKeys.USER)],
-            [
-                sg.Text(f"Password:"),
-                sg.Input(key=JiraCredentialViewKeys.PASSWORD, password_char="•"),
-            ],
-            [
-                sg.Submit(key=JiraCredentialViewEvents.SUBMIT),
-                sg.Cancel(key=JiraCredentialViewEvents.CANCEL),
-            ],
-        ]
-
-    def run(self) -> tuple[str, str]:
-        window = sg.Window(self.title, self.layout)
-        while True:
-            event, values = window.read(close=True)
-            self.log.info("Event %s received", event)
-            match event:
-                case JiraCredentialViewEvents.SUBMIT:
-                    return (
-                        values[JiraCredentialViewKeys.USER],
-                        values[JiraCredentialViewKeys.PASSWORD],
-                    )
-                case JiraCredentialViewEvents.CANCEL | sg.WIN_CLOSED:
-                    return EMPTY, EMPTY
