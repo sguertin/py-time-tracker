@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import IntEnum
+from sqlite3 import Time
 from typing import Optional
 
 from dataclasses_json import DataClassJsonMixin
@@ -9,26 +9,17 @@ from time_tracker.enum import StringEnum
 from time_tracker.issue.models import Issue
 
 
-class JiraStatusCodes(IntEnum):
-    NEEDS_AUTH = 901
-    FAILED_AUTH = 403
-    SUCCESS = 201
+class TimeEntryResponseDisposition(StringEnum):
+    SUCCESS = "success"
+    NO_AUTH = "no credentials"
+    FAILURE = "failure"
 
 
 @dataclass(slots=True)
-class JiraResponse(DataClassJsonMixin):
-    status_code: JiraStatusCodes
+class TimeEntryResponse(DataClassJsonMixin):
+    success: bool
     message: Optional[str] = None
-
-
-class JiraCredentialViewEvents(StringEnum):
-    SUBMIT = "-SUBMIT-"
-    CANCEL = "-CANCEL-"
-
-
-class JiraCredentialViewKeys(StringEnum):
-    USER = "-USER-"
-    PASSWORD = "-PASSWORD-"
+    disposition: Optional[TimeEntryResponseDisposition] = None
 
 
 class TimeEntryKeys(StringEnum):
@@ -48,6 +39,7 @@ class TimeEntryEvents(StringEnum):
 class TimeEntry(DataClassJsonMixin):
     issue: Issue
     comment: Optional[str] = None
+
 
 @dataclass(slots=True)
 class TimeEntryLog(DataClassJsonMixin):
