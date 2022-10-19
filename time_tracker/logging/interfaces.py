@@ -15,8 +15,22 @@ class ILoggingProvider(metaclass=ABCMeta):
             or NotImplemented
         )
 
-    def update_level(self, log_Level: LogLevel):
+    def update_level(self, log_Level: LogLevel) -> None:
+        """Updates the level of logging
+
+        Args:
+            log_Level (LogLevel): The new log level
+
+        """
         raise NotImplementedError(self.update_level)
 
     def get_logger(self, name: str) -> Logger:
+        """Retrieves the logger for the name provided
+
+        Args:
+            name (str): The name of the logger being retrieved
+
+        Returns:
+            Logger: The logger with the matching name
+        """
         raise NotImplementedError(self.get_logger)
