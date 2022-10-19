@@ -6,7 +6,6 @@ from time_tracker.integrations.jira.models import JiraResponse, JiraStatusCodes
 from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.settings.models import Settings
 from time_tracker.time_entry.interfaces import (
-    IAuthenticationProvider,
     ITimeEntryService,
 )
 from time_tracker.time_entry.models import (
@@ -18,9 +17,6 @@ from time_tracker.time_entry.providers import BasicAuthenticationProvider
 
 
 class JiraService(ITimeEntryService):
-    log_provider: ILoggingProvider
-    auth_provider: IAuthenticationProvider
-
     def __init__(
         self,
         log_provider: ILoggingProvider,
@@ -51,20 +47,14 @@ class JiraService(ITimeEntryService):
             "Accept": "application/json",
         }
 
-    def log_work(
-        self,
-        entry: TimeEntry,
-        time_interval: Optional[timedelta] = None,
-    ) -> TimeEntryResponse:
-        if not time_interval:
-            time_interval = timedelta(
-                hours=self.settings.interval_hours,
-                minutes=self.settings.interval_minutes,
-            )
+    def log_work(self, entry: TimeEntry) -> TimeEntryResponse:
+        time_interval = entry.to_time - entry.from_time
         if not self.auth_provider.get_auth():
             self.log.debug("Credentials not found")
-            return JiraResponse(
-                JiraStatusCodes.NEEDS_AUTH, "Need to reauthenticate with Jira"
+            return self.create_response(
+                JiraResponse(
+                    JiraStatusCodes.NEEDS_AUTH, "Need to reauthenticate with Jira"
+                )
             )
 
         url = self.worklog_url(entry.issue)
@@ -109,10 +99,13 @@ class JiraService(ITimeEntryService):
                 message,
             )
         self.log.debug("%s", result)
+        return self.create_response(result)
+
+    def create_response(self, response: JiraResponse):
         return TimeEntryResponse(
-            result.status_code == JiraStatusCodes.SUCCESS,
-            result.message,
-            self.get_disposition(result.status_code),
+            response.status_code == JiraStatusCodes.SUCCESS,
+            response.message,
+            self.get_disposition(response.status_code),
         )
 
     def get_disposition(

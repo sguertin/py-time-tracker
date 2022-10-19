@@ -1,6 +1,4 @@
 from abc import ABCMeta
-from datetime import timedelta
-from typing import Optional
 
 from time_tracker.time_entry.models import TimeEntry, TimeEntryResponse
 
@@ -45,14 +43,13 @@ class ITimeEntryService(metaclass=ABCMeta):
             hasattr(subclass, "log_work") and callable(subclass.log_work)
         ) or NotImplemented
 
-    def log_work(
-        self, entry: TimeEntry, time_interval: Optional[timedelta]
-    ) -> TimeEntryResponse:
+    def log_work(self, time_entry: TimeEntry) -> TimeEntryResponse:
         """Creates a work entry log in a time entry system
 
         Args:
             entry (TimeEntry): The entry to be logged
-            time_interval (Optional[timedelta]): The amount of time being logged
+            from_time (datetime): The starting time of the entry
+            to_time (datetime): The end time of the entry
 
         Returns:
             TimeEntryResponse: The results of the logging call

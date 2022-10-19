@@ -38,6 +38,8 @@ class TimeEntryEvents(StringEnum):
 @dataclass(slots=True)
 class TimeEntry(DataClassJsonMixin):
     issue: Issue
+    from_time: datetime
+    to_time: datetime
     comment: Optional[str] = None
 
 

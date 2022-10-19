@@ -22,12 +22,7 @@ class TimeEntryFileService(ITimeEntryService):
         self.log = log_provider.get_logger("TimeEntryFileService")
         self.settings = settings
 
-    def log_work(self, time_entry: TimeEntry, time_interval: timedelta = None):
-        if not time_interval:
-            time_interval = timedelta(
-                hours=self.settings.interval_hours,
-                minutes=self.settings.interval_minutes,
-            )
+    def log_work(self, time_entry: TimeEntry):
         if self.time_entry_file_path.exists():
             with open(self.time_entry_file_path, "r") as f:
                 entry_log = TimeEntryLog.from_json(f.read())
