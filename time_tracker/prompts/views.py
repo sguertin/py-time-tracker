@@ -6,7 +6,8 @@ from time_tracker.logging.interfaces import ILoggingProvider
 from time_tracker.prompts.models import PromptEvents
 from time_tracker.view import View
 
-class BasePromptView(View,metaclass=ABCMeta):
+
+class BasePromptView(View, metaclass=ABCMeta):
     log: Logger
 
     def run(self) -> PromptEvents:
@@ -14,7 +15,7 @@ class BasePromptView(View,metaclass=ABCMeta):
         event, _ = window.read(close=True)
         self.log.debug(event)
         if event == sg.WIN_CLOSED:
-            event = PromptEvents.CLOSE        
+            event = PromptEvents.CLOSE
         return event
 
 
@@ -26,7 +27,7 @@ class OkCancelPromptView(BasePromptView):
             msg (str): The message to display
         """
 
-        self.log_provider = log_provider
+        self.log = log_provider.get_logger("OkCancelPromptView")
         self.title = "Time Tracking - WARNING"
         self.layout = [
             [sg.Text(msg)],
@@ -44,7 +45,7 @@ class WarningPromptView(BasePromptView):
         Args:
             msg (str): The message to display
         """
-        self.log_provider = log_provider
+        self.log = log_provider.get_logger("OkCancelPromptView")
         self.title = "Time Tracking - WARNING"
         self.layout = (
             [
@@ -61,7 +62,7 @@ class RetryPromptView(BasePromptView):
         Args:
             msg (str): The message to display
         """
-        self.log_provider = log_provider
+        self.log = log_provider.get_logger("OkCancelPromptView")
         self.title = "Time Tracking - WARNING"
         self.layout = [
             [sg.Text(msg)],
