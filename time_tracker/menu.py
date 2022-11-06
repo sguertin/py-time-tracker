@@ -39,7 +39,7 @@ class MenuView(View):
         self.log_provider = log_provider
         self.time_entry_services = time_entry_services
         self.last_time_entry = settings.start_time
-        self.log = log_provider.get_logger("MenuView")
+        self.log = log_provider.get_logger(type(self).__name__)
         self.title = "Time Tracker"
         self.layout = [
             [sg.Button("Record Time Now", key=MenuViewEvents.RECORD, size=BUTTON_SIZE)],
@@ -53,32 +53,36 @@ class MenuView(View):
         while True:
             window = sg.Window(self.title, self.layout)
             event, _ = window.read(timeout=30000)
-            self.log.info("Event %s received", event)
+            self.log.debug("Event %s received", event)
+            window.close()
             if event in (sg.WIN_CLOSED, MenuViewEvents.CLOSE):
-                window.close()
                 break
             elif event == MenuViewEvents.MANAGE:
                 event, _ = IssueManagementView(IssueService(self.log_provider)).run()
             elif event == MenuViewEvents.SETTINGS:
-                event, settings = SettingsView(self.log_provider, self.settings).run()
-                if event == SettingsViewEvents.SAVE:
+                settings_event, settings = SettingsView(
+                    self.log_provider, self.settings
+                ).run()
+                if settings_event == SettingsViewEvents.SAVE:
                     self.settings = settings
                     sg.theme(settings.theme)
-                window.close()
                 break
-                # self.ui_provider.change_settings(self.settings)
+            if event == MenuViewEvents.RECORD:
+                time_entry_event, entry = TimeEntryView(self.log_provider).run(
+                    self.last_time_entry, datetime.now()
+                )
+                if time_entry_event == TimeEntryEvents.SUBMIT:
+                    self.last_time_entry = datetime.now()
+                    for time_entry_service in self.time_entry_services:
+                        time_entry_service.log_work(entry)
 
-            if event == MenuViewEvents.RECORD or datetime.now() >= self.next_time_entry:
+            if datetime.now() >= self.next_time_entry:
                 while self.next_time_entry <= datetime.now():
                     event, entry = TimeEntryView(self.log_provider).run(
                         self.last_time_entry, self.next_time_entry
                     )
                     self.last_time_entry = self.next_time_entry
-                    self.next_time_entry = (
-                        self.next_time_entry + self.settings.time_interval
-                    )
                     if event == TimeEntryEvents.SUBMIT:
                         for time_entry_service in self.time_entry_services:
                             time_entry_service.log_work(entry)
-                window.close()
         return event
