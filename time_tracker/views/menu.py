@@ -2,14 +2,14 @@ from datetime import datetime
 
 import PySimpleGUI as sg
 
-from time_tracker.issue.views import IssueManagementView, IssueService
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.menu.models import MenuViewEvents
-from time_tracker.settings.models import Settings, SettingsViewEvents
-from time_tracker.settings.views import SettingsView
-from time_tracker.time_entry.interfaces import ITimeEntryService
-from time_tracker.time_entry.views import TimeEntryEvents, TimeEntryView
-from time_tracker.view import View
+from time_tracker.views.issue import IssueManagementView, IssueService
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.menu import MenuViewEvents
+from time_tracker.models.settings import Settings, SettingsViewEvents
+from time_tracker.views.settings import SettingsView
+from time_tracker.interfaces.time_entry import ITimeEntryService
+from time_tracker.views.time_entry import TimeEntryEvents, TimeEntryView
+from time_tracker.views.base import View
 
 BUTTON_SIZE: tuple[int, int] = (35, 1)
 

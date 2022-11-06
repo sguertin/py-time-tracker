@@ -2,16 +2,16 @@ from datetime import datetime, timedelta
 from logging import Logger
 from pathlib import Path
 
-from time_tracker.issue.interfaces import IIssueService
-from time_tracker.issue.models import (
+from time_tracker.interfaces.issue import IIssueService
+from time_tracker.models.issue import (
     ACTIVE_ISSUES_FILE,
     DELETED_ISSUES_FILE,
     Issue,
     IssueList,
 )
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.prompts.models import PromptEvents
-from time_tracker.prompts.views import RetryPromptView
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.prompts import PromptEvents
+from time_tracker.views.prompt import RetryPromptView
 
 
 class IssueService(IIssueService):

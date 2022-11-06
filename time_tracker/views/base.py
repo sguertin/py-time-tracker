@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
+EMPTY = ""
+
 
 class View(metaclass=ABCMeta):
     title: str

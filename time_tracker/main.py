@@ -1,7 +1,7 @@
-from time_tracker.menu.views import MenuView
-from time_tracker.menu.models import MenuViewEvents
-from time_tracker.logging.provider import LoggingProvider
-from time_tracker.settings.models import Settings
+from time_tracker.views.menu import MenuView
+from time_tracker.models.menu import MenuViewEvents
+from time_tracker.providers.logging import LoggingProvider
+from time_tracker.models.settings import Settings
 
 settings = Settings.load()
 logging_provider = LoggingProvider(settings)

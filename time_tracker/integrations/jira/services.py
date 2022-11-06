@@ -3,17 +3,17 @@ from typing import Optional
 
 import requests
 from time_tracker.integrations.jira.models import JiraResponse, JiraStatusCodes
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.settings.models import Settings
-from time_tracker.time_entry.interfaces import (
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.settings import Settings
+from time_tracker.interfaces.time_entry import (
     ITimeEntryService,
 )
-from time_tracker.time_entry.models import (
+from time_tracker.models.time_entry import (
     TimeEntry,
     TimeEntryResponse,
     TimeEntryResponseDisposition,
 )
-from time_tracker.time_entry.providers import BasicAuthenticationProvider
+from time_tracker.providers.time_entry import BasicAuthenticationProvider
 
 
 class JiraService(ITimeEntryService):

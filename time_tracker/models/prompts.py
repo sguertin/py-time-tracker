@@ -1,4 +1,4 @@
-from time_tracker.enum import StringEnum
+from time_tracker.models.enum import StringEnum
 
 
 class PromptEvents(StringEnum):

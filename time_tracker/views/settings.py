@@ -1,17 +1,14 @@
 import PySimpleGUI as sg
 
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.enum import StringEnum
-from time_tracker.logging.models import LOGGING_LEVELS
-from time_tracker.settings.models import (
-    DAYS_OF_WEEK,
-    HOUR_RANGE,
-    MINUTE_RANGE,
+from time_tracker.constants import DAYS_OF_WEEK, HOUR_RANGE, MINUTE_RANGE
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.logging import LOGGING_LEVELS
+from time_tracker.models.settings import (
     Settings,
     SettingsViewEvents,
     SettingsViewKeys,
 )
-from time_tracker.view import View
+from time_tracker.views.base import View
 
 
 class SettingsView(View):

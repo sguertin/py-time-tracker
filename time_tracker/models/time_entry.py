@@ -5,8 +5,8 @@ from typing import Optional
 
 from dataclasses_json import DataClassJsonMixin
 
-from time_tracker.enum import StringEnum
-from time_tracker.issue.models import Issue
+from time_tracker.models.enum import StringEnum
+from time_tracker.models.issue import Issue
 
 
 class TimeEntryResponseDisposition(StringEnum):

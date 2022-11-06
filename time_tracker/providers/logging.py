@@ -2,10 +2,10 @@ import logging
 from logging import Logger, FileHandler
 
 from rich.logging import RichHandler
-from time_tracker.logging.interfaces import ILoggingProvider
+from time_tracker.interfaces.logging import ILoggingProvider
 
-from time_tracker.settings.models import Settings
-from time_tracker.logging.models import LogLevel
+from time_tracker.models.settings import Settings
+from time_tracker.models.logging import LogLevel
 
 
 class LoggingProvider(ILoggingProvider):

@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 
-from time_tracker.issue.models import (
+from time_tracker.models.issue import (
     Issue,
     IssueList,
 )

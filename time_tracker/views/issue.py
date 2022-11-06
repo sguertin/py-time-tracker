@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from time_tracker.issue.models import (
+from time_tracker.models.issue import (
     Issue,
     IssueList,
     IssueManagementViewEvents,
@@ -8,7 +8,7 @@ from time_tracker.issue.models import (
     NewIssueViewEvents,
     NewIssueViewKeys,
 )
-from time_tracker.issue.services import IssueService
+from time_tracker.services.issue import IssueService
 from time_tracker.view import EMPTY, View
 
 

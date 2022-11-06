@@ -2,9 +2,10 @@ from abc import ABCMeta
 from logging import Logger
 import PySimpleGUI as sg
 
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.prompts.models import PromptEvents, PromptKeys
-from time_tracker.view import EMPTY, View
+from time_tracker.constants import EMPTY
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.prompts import PromptEvents, PromptKeys
+from time_tracker.views.base import View
 
 
 class BasePromptView(View, metaclass=ABCMeta):

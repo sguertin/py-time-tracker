@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-from time_tracker.time_entry.interfaces import ITimeEntryService
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.settings.models import Settings, WORKING_DIR
-from time_tracker.time_entry.models import TimeEntryLog, TimeEntry, TimeEntryResponse
+from time_tracker.interfaces.time_entry import ITimeEntryService
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.settings import Settings, WORKING_DIR
+from time_tracker.models.time_entry import TimeEntryLog, TimeEntry, TimeEntryResponse
 
 
 class MockTimeEntryService(ITimeEntryService):

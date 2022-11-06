@@ -1,6 +1,6 @@
 import base64
 
-from time_tracker.time_entry.interfaces import IAuthenticationProvider
+from time_tracker.interfaces.time_entry import IAuthenticationProvider
 
 
 class BasicAuthenticationProvider(IAuthenticationProvider):

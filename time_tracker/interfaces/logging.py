@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from logging import Logger
 
-from time_tracker.logging.models import LogLevel
+from time_tracker.models.logging import LogLevel
 
 
 class ILoggingProvider(metaclass=ABCMeta):

@@ -4,15 +4,15 @@ from typing import Optional
 
 import PySimpleGUI as sg
 
-from time_tracker.issue.services import IssueService
-from time_tracker.issue.views import IssueManagementView
-from time_tracker.logging.interfaces import ILoggingProvider
-from time_tracker.time_entry.models import (
+from time_tracker.services.issue import IssueService
+from time_tracker.views.issue import IssueManagementView
+from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.models.time_entry import (
     TimeEntry,
     TimeEntryKeys,
     TimeEntryEvents,
 )
-from time_tracker.view import EMPTY, View
+from time_tracker.views.base import View
 
 
 class TimeEntryView(View):

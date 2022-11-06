@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from time_tracker.time_entry.models import TimeEntry, TimeEntryResponse
+from time_tracker.models.time_entry import TimeEntry, TimeEntryResponse
 
 
 class IAuthenticationProvider(metaclass=ABCMeta):

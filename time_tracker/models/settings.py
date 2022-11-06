@@ -5,11 +5,9 @@ from os import getenv
 from pathlib import Path
 
 from dataclasses_json import DataClassJsonMixin
-from rich import print
 
-from time_tracker.enum import StringEnum
-
-from time_tracker.logging.models import LogLevel
+from time_tracker.models.enum import StringEnum
+from time_tracker.models.logging import LogLevel
 
 try:
     WORKING_DIR: Path = Path(getenv("USERPROFILE"), "TimeTracking")
@@ -17,18 +15,6 @@ except:
     WORKING_DIR: Path = Path(getenv("HOME"), "TimeTracking")
 
 SETTINGS_FILE: Path = Path(WORKING_DIR, "settings.json")
-
-HOUR_RANGE: range = range(24)
-MINUTE_RANGE: range = range(60)
-DAYS_OF_WEEK = {
-    "Monday": 0,
-    "Tuesday": 1,
-    "Wednesday": 2,
-    "Thursday": 3,
-    "Friday": 4,
-    "Saturday": 5,
-    "Sunday": 6,
-}
 
 
 @dataclass(slots=True)
