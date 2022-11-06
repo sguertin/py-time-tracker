@@ -91,17 +91,17 @@ class UserNamePasswordPrompt(BasePromptView):
         window = sg.Window(self.title, self.layout)
         while True:
             event, values = window.read(close=True)
-            self.log.info("Event %s received", event)
-            self.log.debug(
+            self.log.debug("Event %s received", event)
+            self.log.trace(
                 "EVENT %s USERNAME: %s",
                 event,
                 values[PromptKeys.USERNAME],
             )
             match event:
-                case PromptEvents.OK:
+                case [PromptEvents.OK]:
                     return (
                         values[PromptKeys.USERNAME],
                         values[PromptKeys.PASSWORD],
                     )
-                case PromptEvents.CANCEL | sg.WIN_CLOSED:
+                case [PromptEvents.CANCEL | sg.WIN_CLOSED]:
                     return EMPTY, EMPTY
