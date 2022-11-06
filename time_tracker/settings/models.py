@@ -94,21 +94,19 @@ class Settings(DataClassJsonMixin):
 
     @classmethod
     def load(cls) -> "Settings":
-        if cls._instance:
-            return cls._instance
         try:
             with open(SETTINGS_FILE, "r") as f:
-                cls._instance = cls.from_json(f.read())
+                return cls.from_json(f.read())
         except FileNotFoundError:
-            cls._instance = cls()
-        return cls._instance
+            settings = Settings()
+            settings.save()
+            return settings.save()
 
     def save(self) -> "Settings":
         try:
             with open(SETTINGS_FILE, "w+") as f:
                 f.write(self.to_json())
         except Exception as e:
-            print(e)
             return None
         return self
 
