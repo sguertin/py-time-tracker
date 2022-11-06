@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Optional
 
 import requests
-from time_tracker.integrations.jira.models import JiraResponse, JiraStatusCodes
+from time_tracker.integrations.models.jira import JiraResponse, JiraStatusCodes
 from time_tracker.interfaces.logging import ILoggingProvider
 from time_tracker.models.settings import Settings
 from time_tracker.interfaces.time_entry import (
