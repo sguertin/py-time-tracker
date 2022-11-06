@@ -2,9 +2,9 @@ from datetime import datetime
 
 import PySimpleGUI as sg
 
-from time_tracker.enum import StringEnum
 from time_tracker.issue.views import IssueManagementView, IssueService
 from time_tracker.logging.interfaces import ILoggingProvider
+from time_tracker.menu.models import MenuViewEvents
 from time_tracker.settings.models import Settings, SettingsViewEvents
 from time_tracker.settings.views import SettingsView
 from time_tracker.time_entry.interfaces import ITimeEntryService
@@ -12,14 +12,6 @@ from time_tracker.time_entry.views import TimeEntryEvents, TimeEntryView
 from time_tracker.view import View
 
 BUTTON_SIZE: tuple[int, int] = (35, 1)
-
-
-class MenuViewEvents(StringEnum):
-    RECORD = "-RECORD-"
-    MANAGE = "-MANAGE-"
-    THEME = "-THEME-"
-    SETTINGS = "-SETTINGS-"
-    CLOSE = "-CLOSE-"
 
 
 class MenuView(View):

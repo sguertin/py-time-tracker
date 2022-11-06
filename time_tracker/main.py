@@ -1,4 +1,5 @@
-from time_tracker.menu import MenuView, MenuViewEvents
+from time_tracker.menu.views import MenuView
+from time_tracker.menu.models import MenuViewEvents
 from time_tracker.logging.provider import LoggingProvider
 from time_tracker.settings.models import Settings
 
