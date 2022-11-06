@@ -51,15 +51,15 @@ class NewIssueView(View):
                 values[NewIssueViewKeys.DESCRIPTION],
             )
             match event:
-                case NewIssueViewEvents.ANOTHER:
+                case [NewIssueViewEvents.ANOTHER]:
                     result = self.issue_service.new_issue(issue)
                     window[NewIssueViewKeys.RESULT].update(self.result_text(issue))
                     window[NewIssueViewKeys.ISSUE].update(EMPTY)
                     window[NewIssueViewKeys.DESCRIPTION].update(EMPTY)
-                case NewIssueViewEvents.SAVE:
+                case [NewIssueViewEvents.SAVE]:
                     result = self.issue_service.new_issue(issue)
                     break
-                case NewIssueViewEvents.CANCEL | sg.WIN_CLOSED:
+                case [NewIssueViewEvents.CANCEL | sg.WIN_CLOSED]:
                     result = self.issue_service.load_active_issues()
                     break
         window.close()
@@ -75,35 +75,36 @@ class IssueManagementView(View):
 
     def run(self):
         event = None
-        window = sg.Window(self.title, self.layout, size=self.size)
+        window = None
         active_issues, deleted_issues = self.issue_service.load_lists()
-
         while event not in [
             IssueManagementViewEvents.SAVE,
             IssueManagementViewEvents.CANCEL,
             sg.WIN_CLOSED,
         ]:
+            if window is None:
+                window = sg.Window(self.title, self.layout, size=self.size)
+            window[IssueManagementViewKeys.ACTIVE_ISSUES].update(active_issues.issues)
+            window[IssueManagementViewKeys.DELETED_ISSUES].update(deleted_issues.issues)
             event, values = window.read()
             match event:
-                case IssueManagementViewEvents.NEW:
+                case [IssueManagementViewEvents.NEW]:
+                    window = window.close()
                     active_issues = NewIssueView.run()
-                case IssueManagementViewEvents.DELETE:
+                case [IssueManagementViewEvents.DELETE]:
                     self.move_issue(
                         issue=values[IssueManagementViewKeys.ACTIVE_ISSUES],
                         from_list=active_issues,
                         to_list=deleted_issues,
                     )
-                case IssueManagementViewEvents.RESTORE:
+                case [IssueManagementViewEvents.RESTORE]:
                     active_issues, deleted_issues = self.issue_service.load_lists()
-                case IssueManagementViewEvents.SAVE:
+                case [IssueManagementViewEvents.SAVE]:
+                    window = window.close()
                     self.issue_service.save_all_lists(active_issues, deleted_issues)
-                    break
-                case IssueManagementViewEvents.CANCEL | sg.WIN_CLOSED:
-                    break
-            window[IssueManagementViewKeys.ACTIVE_ISSUES].update(active_issues.issues)
-            window[IssueManagementViewKeys.DELETED_ISSUES].update(deleted_issues.issues)
-            window.refresh()
-        window.close()
+                    return event
+                case [IssueManagementViewEvents.CANCEL | sg.WIN_CLOSED]:
+                    return IssueManagementViewEvents.CANCEL
 
     def __init__(self, issue_service: IssueService):
         self.issue_service = issue_service
