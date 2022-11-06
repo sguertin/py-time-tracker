@@ -48,11 +48,18 @@ class TimeEntryView(View):
     def run(
         self, from_time: datetime, to_time: datetime
     ) -> tuple[TimeEntryEvents, Optional[TimeEntry]]:
-        window = sg.Window(self.title, self.layout)
-        window[TimeEntryKeys.TEXT].update(
-            f"What have you been working on for "
-            + f"{from_time.hour:02}:{from_time.minute:02} - {to_time.hour:02}:{to_time.minute:02}?"
-        )
+        issue_list = self.issue_service.load_active_issues()
+
+        def _make_window(from_time: datetime, to_time: datetime):
+            text = (
+                f"What have you been working on for "
+                + f"{from_time.hour:02}:{from_time.minute:02} - {to_time.hour:02}:{to_time.minute:02}?"
+            )
+            window = sg.Window(self.title, self.layout)
+            window[TimeEntryKeys.TEXT].update(text)
+            window[TimeEntryKeys.ENTRY].update(issue_list.issues)
+            return window
+
         time_entry = None
         event = None
         while event not in [
@@ -60,19 +67,19 @@ class TimeEntryView(View):
             TimeEntryEvents.SKIP,
             TimeEntryEvents.SUBMIT,
         ]:
-            issue_list = self.issue_service.load_active_issues()
-            window[TimeEntryKeys.ENTRY].update(issue_list.issues)
+            window = _make_window(from_time, to_time)
             event, values = window.read()
-            if event == TimeEntryEvents.SUBMIT:
-                time_entry = TimeEntry(
-                    values[TimeEntryKeys.ENTRY],
-                    from_time,
-                    to_time,
-                    values[TimeEntryKeys.COMMENT],
-                )
-            elif event == TimeEntryEvents.MANAGE_ISSUES:
-                IssueManagementView(self.issue_service).run()
-        window.close()
-        if event == sg.WIN_CLOSED:
-            event = TimeEntryEvents.SKIP
+            window.close()
+            match event:
+                case TimeEntryEvents.SUBMIT:
+                    time_entry = TimeEntry(
+                        values[TimeEntryKeys.ENTRY],
+                        from_time,
+                        to_time,
+                        values[TimeEntryKeys.COMMENT],
+                    )
+                case TimeEntryEvents.MANAGE_ISSUES:
+                    IssueManagementView(self.issue_service).run()
+                case [sg.WIN_CLOSED, TimeEntryEvents.SKIP]:
+                    event = TimeEntryEvents.SKIP
         return event, time_entry
