@@ -1,14 +1,15 @@
 import PySimpleGUI as sg
 
 from time_tracker.logging.interfaces import ILoggingProvider
+from time_tracker.enum import StringEnum
 from time_tracker.logging.models import LOGGING_LEVELS
 from time_tracker.settings.models import (
     DAYS_OF_WEEK,
     HOUR_RANGE,
     MINUTE_RANGE,
     Settings,
-    SettingsViewKeys,
     SettingsViewEvents,
+    SettingsViewKeys,
 )
 from time_tracker.view import View
 
@@ -16,7 +17,7 @@ from time_tracker.view import View
 class SettingsView(View):
     def __init__(self, log_provider: ILoggingProvider, settings: Settings):
         self.current_settings = settings
-        self.log = log_provider.get_logger("SettingsView")
+        self.log = log_provider.get_logger(type(self).__name__)
         self.title = f"Settings"
         hours_of_day = [f"{hour:02}" for hour in HOUR_RANGE]
         minutes_of_day = [f"{minute:02}" for minute in MINUTE_RANGE]
