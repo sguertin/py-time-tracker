@@ -1,5 +1,7 @@
 import PySimpleGUI as sg
-
+from time_tracker.constants import EMPTY
+from time_tracker.interfaces.issue import IIssueService
+from time_tracker.interfaces.views import IView, IViewFactory
 from time_tracker.models.issue import (
     Issue,
     IssueList,
@@ -8,14 +10,12 @@ from time_tracker.models.issue import (
     NewIssueViewEvents,
     NewIssueViewKeys,
 )
-from time_tracker.services.issue import IssueService
-from time_tracker.view import EMPTY, View
 
 
-class NewIssueView(View):
-    issue_service: IssueService
+class NewIssueView(IView):
+    issue_service: IIssueService
 
-    def __init__(self, issue_service: IssueService):
+    def __init__(self, issue_service: IIssueService):
         self.issue_service = issue_service
         self.title = "Time Tracking - Add New Entry"
         self.layout = [
@@ -43,31 +43,28 @@ class NewIssueView(View):
         return f"Issue {issue} was successfully added"
 
     def run(self) -> IssueList:
-        window = sg.Window(self.title, self.layout)
         while True:
-            event, values = window.read()
+            window = sg.Window(self.title, self.layout)
+            event, values = window.read(close=True)
             issue = Issue(
                 values[NewIssueViewKeys.ISSUE],
                 values[NewIssueViewKeys.DESCRIPTION],
             )
             match event:
                 case [NewIssueViewEvents.ANOTHER]:
-                    result = self.issue_service.new_issue(issue)
+                    self.issue_service.new_issue(issue)
                     window[NewIssueViewKeys.RESULT].update(self.result_text(issue))
                     window[NewIssueViewKeys.ISSUE].update(EMPTY)
                     window[NewIssueViewKeys.DESCRIPTION].update(EMPTY)
                 case [NewIssueViewEvents.SAVE]:
-                    result = self.issue_service.new_issue(issue)
-                    break
+                    return self.issue_service.new_issue(issue)
                 case [NewIssueViewEvents.CANCEL | sg.WIN_CLOSED]:
-                    result = self.issue_service.load_active_issues()
-                    break
-        window.close()
-        return result
+                    return self.issue_service.load_active_issues()
 
 
-class IssueManagementView(View):
-    issue_service: IssueService
+class IssueManagementView(IView):
+    issue_service: IIssueService
+    view_factory: IViewFactory
 
     def move_issue(self, issue: Issue, from_list: IssueList, to_list: IssueList):
         from_list.remove(issue)
@@ -90,7 +87,7 @@ class IssueManagementView(View):
             match event:
                 case [IssueManagementViewEvents.NEW]:
                     window = window.close()
-                    active_issues = NewIssueView.run()
+                    active_issues = self.view_factory.make_new_issue_view().run()
                 case [IssueManagementViewEvents.DELETE]:
                     self.move_issue(
                         issue=values[IssueManagementViewKeys.ACTIVE_ISSUES],
@@ -106,8 +103,9 @@ class IssueManagementView(View):
                 case [IssueManagementViewEvents.CANCEL | sg.WIN_CLOSED]:
                     return IssueManagementViewEvents.CANCEL
 
-    def __init__(self, issue_service: IssueService):
+    def __init__(self, issue_service: IIssueService, view_factory: IViewFactory):
         self.issue_service = issue_service
+        self.view_factory = view_factory
         self.title = "Time Tracking - Manage Issues"
         self.size = (550, 775)
         self.layout = [
