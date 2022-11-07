@@ -8,10 +8,10 @@ from time_tracker.models.settings import (
     SettingsViewEvents,
     SettingsViewKeys,
 )
-from time_tracker.views.base import View
+from time_tracker.interfaces.views import IView
 
 
-class SettingsView(View):
+class SettingsView(IView):
     def __init__(self, log_provider: ILoggingProvider, settings: Settings):
         self.current_settings = settings
         self.log = log_provider.get_logger(type(self).__name__)
