@@ -1,4 +1,4 @@
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 from time_tracker.models.time_entry import TimeEntry, TimeEntryResponse
 
@@ -13,10 +13,12 @@ class IAuthenticationProvider(metaclass=ABCMeta):
             or NotImplemented
         )
 
+    @abstractmethod
     def clear_auth(self) -> None:
         """Clears the current stored authentication token"""
         raise NotImplementedError(self.clear_auth)
 
+    @abstractmethod
     def get_auth(self) -> str:
         """Retrieves the authentication token
 
@@ -25,6 +27,7 @@ class IAuthenticationProvider(metaclass=ABCMeta):
         """
         raise NotImplementedError(self.get_auth)
 
+    @abstractmethod
     def set_auth(self, user_name: str, password: str) -> None:
         """Generates authentication token from the username and password provided
 
@@ -43,6 +46,7 @@ class ITimeEntryService(metaclass=ABCMeta):
             hasattr(subclass, "log_work") and callable(subclass.log_work)
         ) or NotImplemented
 
+    @abstractmethod
     def log_work(self, time_entry: TimeEntry) -> TimeEntryResponse:
         """Creates a work entry log in a time entry system
 
@@ -55,3 +59,20 @@ class ITimeEntryService(metaclass=ABCMeta):
             TimeEntryResponse: The results of the logging call
         """
         raise NotImplementedError(self.log_work)
+
+
+class ITimeEntryServiceFactory:
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return (
+            hasattr(subclass, "make_time_entry_services")
+            and callable(subclass.make_time_entry_services)
+        ) or NotImplemented
+
+    def make_time_entry_services(self) -> list[ITimeEntryService]:
+        """Returns list of all time entry services to be used
+
+        Returns:
+            list[ITimeEntryService]: The time entry services to be used
+        """
+        raise NotImplementedError(self.make_time_entry_services)

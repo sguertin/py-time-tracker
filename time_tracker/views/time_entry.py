@@ -3,6 +3,7 @@ from logging import Logger
 from typing import Optional
 
 import PySimpleGUI as sg
+from time_tracker.interfaces.issue import IIssueService
 
 from time_tracker.services.issue import IssueService
 from time_tracker.views.issue import IssueManagementView
@@ -12,17 +13,17 @@ from time_tracker.models.time_entry import (
     TimeEntryKeys,
     TimeEntryEvents,
 )
-from time_tracker.views.base import View
+from time_tracker.interfaces.views import ITimeEntryView
 
 
-class TimeEntryView(View):
+class TimeEntryView(ITimeEntryView):
     log: Logger
     issue_service: IssueService
 
-    def __init__(self, log_provider: ILoggingProvider):
+    def __init__(self, log_provider: ILoggingProvider, issue_service: IIssueService):
         self.log_provider = log_provider
         self.log = log_provider.get_logger("TimeEntryPrompt")
-        self.issue_service = IssueService(log_provider)
+        self.issue_service = issue_service
         self.title = "Time Tracking Entry"
         self.layout = [
             [
@@ -68,8 +69,7 @@ class TimeEntryView(View):
             TimeEntryEvents.SUBMIT,
         ]:
             window = _make_window(from_time, to_time)
-            event, values = window.read()
-            window.close()
+            event, values = window.read(close=True)
             match event:
                 case TimeEntryEvents.SUBMIT:
                     time_entry = TimeEntry(
