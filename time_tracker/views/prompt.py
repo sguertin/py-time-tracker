@@ -5,11 +5,12 @@ import PySimpleGUI as sg
 from time_tracker.constants import EMPTY
 from time_tracker.interfaces.logging import ILoggingProvider
 from time_tracker.models.prompts import PromptEvents, PromptKeys
-from time_tracker.views.base import View
+from time_tracker.interfaces.views import IPromptView, IUserCredentialView
 
 
-class BasePromptView(View, metaclass=ABCMeta):
+class PromptView(IPromptView):
     log: Logger
+    title: str
 
     def run(self) -> PromptEvents:
         window = sg.Window(title=self.title, layout=self.layout, size=self.size)
@@ -20,7 +21,7 @@ class BasePromptView(View, metaclass=ABCMeta):
         return event
 
 
-class OkCancelPromptView(BasePromptView):
+class OkCancelPromptView(PromptView):
     def __init__(self, msg: str, log_provider: ILoggingProvider):
         """OkCancelPrompt - When run, will display a message and include Ok and Cancel buttons
 
@@ -39,7 +40,7 @@ class OkCancelPromptView(BasePromptView):
         ]
 
 
-class WarningPromptView(BasePromptView):
+class WarningPromptView(PromptView):
     def __init__(self, msg: str, log_provider: ILoggingProvider):
         """WarningPrompt - When run, will display a message with a Close button
 
@@ -56,7 +57,7 @@ class WarningPromptView(BasePromptView):
         )
 
 
-class RetryPromptView(BasePromptView):
+class RetryPromptView(PromptView):
     def __init__(self, msg: str, log_provider: ILoggingProvider):
         """RetryPrompt - When run, will display a message and include Retry and Cancel buttons
 
@@ -71,12 +72,16 @@ class RetryPromptView(BasePromptView):
         ]
 
 
-class UserNamePasswordPrompt(BasePromptView):
-    def __init__(self, log_provider: ILoggingProvider):
+class UserNamePasswordPrompt(IUserCredentialView):
+    def __init__(
+        self,
+        msg: str,
+        log_provider: ILoggingProvider,
+    ):
         self.log = log_provider.get_logger("UserNamePasswordPrompt")
         self.title = (f"Time Tracking - Credentials",)
         self.layout = [
-            [sg.Text(f"Please provide your username and password")],
+            [sg.Text(msg)],
             [sg.Text(f"Username:"), sg.Input(key=PromptKeys.USERNAME)],
             [
                 sg.Text(f"Password:"),
