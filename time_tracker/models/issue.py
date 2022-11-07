@@ -5,7 +5,7 @@ from typing import Callable, Iterable
 
 from dataclasses_json import DataClassJsonMixin
 
-from time_tracker.models.enum import StringEnum
+from time_tracker.models.enums import StringEnum
 from time_tracker.models.settings import WORKING_DIR
 
 ACTIVE_ISSUES_FILE: Path = WORKING_DIR.joinpath("issues.json")

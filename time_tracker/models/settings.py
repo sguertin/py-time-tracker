@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dataclasses_json import DataClassJsonMixin
 
-from time_tracker.models.enum import StringEnum
+from time_tracker.models.enums import StringEnum
 from time_tracker.models.logging import LogLevel
 
 try:
