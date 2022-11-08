@@ -1,5 +1,6 @@
 from time_tracker.interfaces.issue import IIssueServiceFactory
 from time_tracker.interfaces.logging import ILoggingProvider
+from time_tracker.interfaces.settings import ISettingsProvider
 from time_tracker.interfaces.time_entry import ITimeEntryServiceFactory
 from time_tracker.interfaces.views import (
     IPromptView,
@@ -28,19 +29,22 @@ class ViewFactory(IViewFactory):
         log_provider: ILoggingProvider,
         issue_service_factory: IIssueServiceFactory,
         time_entry_service_factory: ITimeEntryServiceFactory,
+        settings_provider: ISettingsProvider,
     ):
         self.log_provider = log_provider
         self.issue_service = issue_service_factory.make_issue_service()
         self.time_entry_services = time_entry_service_factory.make_time_entry_services()
+        self.settings_provider = settings_provider
 
     def make_issue_management_view(self) -> IView:
-        return IssueManagementView(self.issue_service)
+        return IssueManagementView(self.issue_service, self)
 
     def make_menu_view(self) -> IView:
         return MenuView(
             self.log_provider,
             self.time_entry_services,
-            Settings.load(),
+            self.settings_provider.get_settings(),
+            self,
         )
 
     def make_new_issue_view(self) -> IView:
