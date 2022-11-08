@@ -10,3 +10,4 @@ DAYS_OF_WEEK = {
     "Saturday": 5,
     "Sunday": 6,
 }
+CLOSE_EVENTS = [None, "-CLOSE-", "-CANCEL-"]
