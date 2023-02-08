@@ -114,6 +114,15 @@ class IViewFactory(metaclass=ABCMeta):
         """
         raise NotImplementedError(self.make_settings_view)
 
+    @abstractmethod
+    def make_menu_view(self) -> IView:
+        """Initializes main menu view
+
+        Returns:
+            IView: The main menu view
+        """
+        raise NotImplementedError(self.make_menu_view)
+
 
 class IPromptViewFactory:
     @classmethod
