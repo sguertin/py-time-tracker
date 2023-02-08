@@ -15,7 +15,7 @@ class PromptView(IPromptView):
     def run(self) -> PromptEvents:
         window = sg.Window(title=self.title, layout=self.layout, size=self.size)
         event, _ = window.read(close=True)
-        self.log.debug(event)
+        self.log.info("Event %s received", event)
         if event == sg.WIN_CLOSED:
             event = PromptEvents.CLOSE
         return event
@@ -97,8 +97,8 @@ class UserNamePasswordPrompt(IUserCredentialView):
         window = sg.Window(self.title, self.layout)
         while True:
             event, values = window.read(close=True)
-            self.log.debug("Event %s received", event)
-            self.log.trace(
+            self.log.info("Event %s received", event)
+            self.log.debug(
                 "EVENT %s USERNAME: %s",
                 event,
                 values[PromptKeys.USERNAME],

@@ -93,7 +93,7 @@ class SettingsView(IView):
         window = sg.Window(title=self.title, layout=self.layout)
         while True:
             event, values = window.read(close=True)
-            self.log.debug("Event %s received", event)
+            self.log.info("Event %s received", event)
             if event == SettingsViewEvents.SAVE:
                 new_settings = Settings(
                     base_url=values[SettingsViewKeys.BASE_URL],

@@ -45,7 +45,7 @@ class MenuView(IView):
         while True:
             window = sg.Window(self.title, self.layout)
             event, _ = window.read(close=True, timeout=30000)
-            self.log.debug("Event %s received", event)
+            self.log.info("Event %s received", event)
             if event in (sg.WIN_CLOSED, MenuViewEvents.CLOSE):
                 break
             elif event == MenuViewEvents.MANAGE:
