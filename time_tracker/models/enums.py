@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class StringEnum(Enum):
-    def __eq__(self, other: "StringEnum") -> bool:
+    def __eq__(self, other: "StringEnum" | None) -> bool:
         if other is None:
             return self.value is None
         return str(self.value) == str(other.value)
